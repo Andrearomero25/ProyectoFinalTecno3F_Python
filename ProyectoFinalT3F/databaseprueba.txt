@@ -1,0 +1,90 @@
+
+import sqlite3
+
+class Database:
+    def __init__(self, db_name="nike_factory.db"):
+        self.conn = sqlite3.connect(db_name)
+        self.cursor = self.conn.cursor()
+        self.create_tables()
+
+
+    def create_tables(self):
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS categorias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL
+        )
+        """)
+
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS productos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            precio REAL NOT NULL,
+            categoria_id INTEGER,
+            FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+        )
+        """)
+
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS clientes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            email TEXT NOT NULL,
+            producto_id INTEGER,
+            FOREIGN KEY (producto_id) REFERENCES productos(id)
+        )
+        """)
+
+        self.conn.commit()
+
+    def insert_categoria(self, nombre):
+        self.cursor.execute("INSERT INTO categorias (nombre) VALUES (?)", (nombre,))
+        self.conn.commit()
+
+    def insert_producto(self, nombre, precio, categoria_id):
+        self.cursor.execute("INSERT INTO productos (nombre, precio, categoria_id) VALUES (?, ?, ?)", (nombre, precio, categoria_id))
+        self.conn.commit()
+
+    def insert_cliente(self, nombre, email, producto_id):
+        self.cursor.execute("INSERT INTO clientes (nombre, email, producto_id) VALUES (?, ?, ?)", (nombre, email, producto_id))
+        self.conn.commit()
+
+    def get_categorias(self):
+        self.cursor.execute("SELECT * FROM categorias")
+        return self.cursor.fetchall()
+
+    def get_productos(self):
+        self.cursor.execute("SELECT * FROM productos")
+        return self.cursor.fetchall()
+
+    def get_clientes(self):
+        self.cursor.execute("SELECT * FROM clientes")
+        return self.cursor.fetchall()
+
+    def update_categoria(self, id, nombre):
+        self.cursor.execute("UPDATE categorias SET nombre = ? WHERE id = ?", (nombre, id))
+        self.conn.commit()
+
+    def update_producto(self, id, nombre, precio, categoria_id):
+        self.cursor.execute("UPDATE productos SET nombre = ?, precio = ?, categoria_id = ? WHERE id = ?", (nombre, precio, categoria_id, id))
+        self.conn.commit()
+
+    def update_cliente(self, id, nombre, email, producto_id):
+        self.cursor.execute("UPDATE clientes SET nombre = ?, email = ?, producto_id = ? WHERE id = ?", (nombre, email, producto_id, id))
+        self.conn.commit()
+
+    def delete_categoria(self, id):
+        self.cursor.execute("DELETE FROM categorias WHERE id = ?", (id,))
+        self.conn.commit()
+
+    def delete_producto(self, id):
+        self.cursor.execute("DELETE FROM productos WHERE id = ?", (id,))
+        self.conn.commit()
+
+    def delete_cliente(self, id):
+        self.cursor.execute("DELETE FROM clientes WHERE id = ?", (id,))
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
